@@ -30,7 +30,22 @@ exports.query = (sql, placeholder, callback) => {
     });
 };
 
-exports.response = (req, res) => {
-    res.json(req._result);
+exports.response = (_, res) => {
+    res.json(res.result);
 };
 
+/*
+ * bcript
+ */
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+exports.bcrypt = {
+    generate: async password => {
+        return new Promise((resolve, reject) => {
+            bcrypt.hash(password, saltRounds, (err, hash) => {
+                if (err) reject(err);
+                resolve(hash);
+            });
+        });
+    },
+};
