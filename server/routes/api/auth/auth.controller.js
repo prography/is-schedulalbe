@@ -15,7 +15,7 @@ exports.signup = async (req, res, next) => {
         const sql = 'INSERT INTO USERS(EMAIL, PASSWORD) VALUES(?, ?);',
             placeholder = [email, await bcrypt.generate(password)];
 
-        const results = await query(sql, placeholder);
+        await query(sql, placeholder);
         res.result = {
             result: true
         };
