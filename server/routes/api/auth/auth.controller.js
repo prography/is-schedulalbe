@@ -1,7 +1,7 @@
 const util = require('../../util');
 const {
     query,
-    generateHash
+    bcrypt
 } = util;
 
 /*
@@ -11,10 +11,9 @@ exports.signup = async (req, res, next) => {
     try {
         const email = req.body.email,
             password = req.body.password;
-        let a = await generateHash(password);
-        const sql = 'INSERT INTO USERS(EMAIL, PASSWORD) VALUES(?, ?);',
-            placeholder = [email, a];
 
+        const sql = 'INSERT INTO USERS(EMAIL, PASSWORD) VALUES(?, ?);',
+            placeholder = [email, await bcrypt.generate(password)];
 
         query(sql, placeholder, (err, results, fields) => {
             if (err) {
@@ -22,12 +21,49 @@ exports.signup = async (req, res, next) => {
             }
 
             res.result = {
-                result: true,
-                status: 200
+                result: true
             };
             next();
         });
     } catch (err) {
-        console.error(err);
+        next({
+            message: err
+        });
+    }
+};
+
+/*
+ * 로그인
+ */
+exports.signin = async (req, res, next) => {
+    try {
+        const email = req.body.email,
+            password = req.body.password;
+
+        const sql = 'SELECT PASSWORD FROM USERS WHERE EMAIL = ?;',
+            placeholder = [email];
+
+        query(sql, placeholder, async (err, results, fields) => {
+            if (err) {
+                next(err);
+            }
+
+            const compareResult = await bcrypt.compare(password, results[0]['PASSWORD']);
+            if (!compareResult) {
+                next({
+                    status: 401,
+                    message: 'Check your email or password'
+                });
+            } else {
+                res.result = {
+                    result: true
+                };
+                next();
+            }
+        })
+    } catch (err) {
+        next({
+            message: err,
+        });
     }
 };

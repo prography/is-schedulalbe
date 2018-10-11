@@ -10,5 +10,6 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/signup', controller.signup, response);
+router.post('/signin', controller.signin, response);
 
 module.exports = router;
