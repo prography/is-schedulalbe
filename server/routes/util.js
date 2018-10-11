@@ -33,3 +33,4 @@ exports.query = (sql, placeholder, callback) => {
 exports.response = (req, res) => {
     res.json(req._result);
 };
+
