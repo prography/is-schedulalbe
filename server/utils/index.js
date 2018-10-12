@@ -5,11 +5,15 @@ const mysql = require('mysql');
 const mysql_config = require('../config/config').mysql_config;
 const pool = mysql.createPool(mysql_config);
 exports.query = (sql, placeholder) => {
+    const code2status = {
+        'ER_DUP_ENTRY': 409,
+    };
     return new Promise((resolve, reject) => {
         pool.getConnection((err, conn) => {
             if (err) {
                 reject({
-                    message: err.sqlMessage
+                    status: code2status[err.code] || 500,
+                    message: err.sqlMessage,
                 });
             }
 
@@ -18,7 +22,8 @@ exports.query = (sql, placeholder) => {
                     conn.release();
                     if (err) {
                         reject({
-                            message: err.sqlMessage
+                            status: code2status[err.code] || 500,
+                            message: err.sqlMessage,
                         });
                     }
                     resolve(results);
@@ -66,5 +71,5 @@ exports.bcrypt = {
                 resolve(res);
             });
         });
-    }
+    },
 };

@@ -5,13 +5,16 @@ const {
 } = require('./auth.controller');
 const {
     response,
-} = require('../../util');
+} = require('../../../utils');
+const {
+    validationResult
+} = require('../../../utils/validators');
 
 router.get('/', (req, res, next) => {
     res.send('api auth');
 });
 
-router.post('/signup', signup.validate, signup.valdiateResult, signup.execute, response);
-router.post('/signin', signin.validate, signin.valdiateResult, signin.execute, response);
+router.post('/signup', signup.validate, validationResult, signup.run, response);
+router.post('/signin', signin.validate, validationResult, signin.run, response);
 
 module.exports = router;
