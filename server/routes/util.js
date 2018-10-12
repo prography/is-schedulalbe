@@ -33,7 +33,17 @@ exports.query = (sql, placeholder) => {
  * API response
  */
 exports.response = (_, res) => {
-    res.json(res.result);
+    try {
+        res.status(res.result.status)
+            .json({
+                message: res.result.message,
+            });
+    } catch (err) {
+        throw {
+            status: 500,
+            message: err.message,
+        };
+    }
 };
 
 /*

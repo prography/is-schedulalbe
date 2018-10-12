@@ -1,8 +1,7 @@
-const util = require('../../util');
 const {
     query,
     bcrypt
-} = util;
+} = require('../../util');
 
 /*
  * 회원가입 
@@ -17,12 +16,13 @@ exports.signup = async (req, res, next) => {
 
         await query(sql, placeholder);
         res.result = {
-            result: true
+            status: 200,
+            message: "Signed up successfully"
         };
         next();
     } catch (err) {
         next({
-            message: err
+            message: err.message ? err.message : 'no message'
         });
     }
 };
@@ -47,13 +47,15 @@ exports.signin = async (req, res, next) => {
                 message: 'Check your email or password'
             });
         }
+
         res.result = {
-            result: true
+            status: 200,
+            message: 'Signed in successfully',
         };
         next();
     } catch (err) {
         next({
-            message: err,
+            message: err.message ? err.message : 'no message',
         });
     }
 };
