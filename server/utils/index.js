@@ -5,21 +5,25 @@ const mysql = require('mysql');
 const mysql_config = require('../config/config').mysql_config;
 const pool = mysql.createPool(mysql_config);
 exports.query = (sql, placeholder) => {
+    const code2status = {
+        'ER_DUP_ENTRY': 409,
+    };
     return new Promise((resolve, reject) => {
         pool.getConnection((err, conn) => {
             if (err) {
                 reject({
-                    message: err.sqlMessage
+                    status: code2status[err.code] || 500,
+                    message: err.sqlMessage,
                 });
             }
 
             if (placeholder !== null) {
                 conn.query(sql, placeholder, (err, results) => {
                     conn.release();
-
                     if (err) {
                         reject({
-                            message: err.sqlMessage
+                            status: code2status[err.code] || 500,
+                            message: err.sqlMessage,
                         });
                     }
                     resolve(results);
@@ -33,7 +37,17 @@ exports.query = (sql, placeholder) => {
  * API response
  */
 exports.response = (_, res) => {
-    res.json(res.result);
+    try {
+        res.status(res.result.status)
+            .json({
+                message: res.result.message,
+            });
+    } catch (err) {
+        throw {
+            status: 500,
+            message: err.message,
+        };
+    }
 };
 
 /*
@@ -57,5 +71,5 @@ exports.bcrypt = {
                 resolve(res);
             });
         });
-    }
+    },
 };

@@ -1,15 +1,20 @@
 const router = require('express').Router();
-const controller = require('./auth.controller');
-const util = require('../../util');
 const {
-    response
-} = util;
+    signup,
+    signin,
+} = require('./auth.controller');
+const {
+    response,
+} = require('../../../utils');
+const {
+    validationResult
+} = require('../../../utils/validators');
 
 router.get('/', (req, res, next) => {
     res.send('api auth');
 });
 
-router.post('/signup', controller.signup, response);
-router.post('/signin', controller.signin, response);
+router.post('/signup', signup.validate, validationResult, signup.run, response);
+router.post('/signin', signin.validate, validationResult, signin.run, response);
 
 module.exports = router;

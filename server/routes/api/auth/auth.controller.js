@@ -1,59 +1,91 @@
-const util = require('../../util');
+const {
+    body,
+    check,
+    validationResult,
+} = require('express-validator/check');
 const {
     query,
-    bcrypt
-} = util;
+    bcrypt,
+} = require('../../../utils');
+const validators = require('../../../utils/validators');
 
 /*
  * 회원가입 
  */
-exports.signup = async (req, res, next) => {
-    try {
-        const email = req.body.email,
-            password = req.body.password;
+exports.signup = {
+    validate: [
+        validators.email(),
+        validators.password(),
+    ],
+    run: async (req, res, next) => {
+        try {
+            const {
+                email,
+                password
+            } = req.body;
 
-        const sql = 'INSERT INTO USERS(EMAIL, PASSWORD) VALUES(?, ?);',
-            placeholder = [email, await bcrypt.generate(password)];
+            const sql = 'INSERT INTO USERS(EMAIL, PASSWORD) VALUES(?, ?);',
+                placeholder = [email, await bcrypt.generate(password)];
 
-        await query(sql, placeholder);
-        res.result = {
-            result: true
-        };
-        next();
-    } catch (err) {
-        next({
-            message: err
-        });
-    }
+            await query(sql, placeholder);
+            res.result = {
+                status: 200,
+                message: 'Signed up successfully',
+            };
+            next();
+        } catch (err) {
+            next({
+                status: err.status,
+                message: err.message || 'no message',
+            });
+        }
+    },
 };
 
 /*
  * 로그인
  */
-exports.signin = async (req, res, next) => {
-    try {
-        const email = req.body.email,
-            password = req.body.password;
+exports.signin = {
+    validate: [
+        validators.email(),
+        validators.password(),
+    ],
+    run: async (req, res, next) => {
+        try {
+            const {
+                email,
+                password
+            } = req.body;
 
-        const sql = 'SELECT PASSWORD FROM USERS WHERE EMAIL = ?;',
-            placeholder = [email];
+            const sql = 'SELECT PASSWORD FROM USERS WHERE EMAIL = ?;',
+                placeholder = [email];
 
-        const results = await query(sql, placeholder),
-            compareResult = await bcrypt.compare(password, results[0]['PASSWORD']);
+            const result = await query(sql, placeholder);
+            if (result.length < 1) {
+                throw {
+                    status: 401,
+                    message: 'Check your email or password',
+                }
+            }
 
-        if (!compareResult) {
+            const compareResult = await bcrypt.compare(password, result[0]['PASSWORD']);
+            if (!compareResult) {
+                throw {
+                    status: 401,
+                    message: 'Check your email or password',
+                }
+            }
+
+            res.result = {
+                status: 200,
+                message: 'Signed in successfully',
+            };
+            next();
+        } catch (err) {
             next({
-                status: 401,
-                message: 'Check your email or password'
+                status: err.status,
+                message: err.message || 'no message',
             });
         }
-        res.result = {
-            result: true
-        };
-        next();
-    } catch (err) {
-        next({
-            message: err,
-        });
-    }
+    },
 };
