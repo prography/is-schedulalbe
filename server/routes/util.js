@@ -16,7 +16,6 @@ exports.query = (sql, placeholder) => {
             if (placeholder !== null) {
                 conn.query(sql, placeholder, (err, results) => {
                     conn.release();
-
                     if (err) {
                         reject({
                             message: err.sqlMessage
